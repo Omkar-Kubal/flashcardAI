@@ -26,6 +26,20 @@ class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
     SQLALCHEMY_ECHO = False
+    
+    @staticmethod
+    def init_app(app):
+        """Production-specific initialization."""
+        # Ensure SECRET_KEY is set in production
+        if app.config['SECRET_KEY'] == 'dev-secret-key-change-in-production':
+            raise ValueError("Please set a secure SECRET_KEY in production!")
+        
+        # Handle Railway's PostgreSQL DATABASE_URL
+        # Railway provides postgres:// but SQLAlchemy requires postgresql://
+        database_url = os.environ.get('DATABASE_URL')
+        if database_url and database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+            app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
 
 config = {
