@@ -1,193 +1,190 @@
-# Deploying BrainDeck to Railway
+# 🚀 BrainDeck Deployment Guide
 
-This guide walks you through deploying your Flask flashcard application to Railway.
+## ✅ GitHub Ready - YES!
 
-## Prerequisites
+Your project is ready to push to GitHub. All sensitive data is properly gitignored.
 
-- [Railway account](https://railway.app/) (sign up with GitHub)
-- [Railway CLI](https://docs.railway.app/develop/cli) (optional, for command-line deployment)
-- Git repository initialized (already done ✓)
-
-## Step 1: Push to GitHub
-
-1. **Create a new repository** on GitHub (if you haven't already)
-2. **Push your code**:
-   ```bash
-   git add .
-   git commit -m "Add Railway deployment configuration"
-   git push origin main
-   ```
-
-## Step 2: Create Railway Project
-
-1. Go to [Railway Dashboard](https://railway.app/dashboard)
-2. Click **"New Project"**
-3. Select **"Deploy from GitHub repo"**
-4. Choose your `Flash-Card` repository
-5. Railway will automatically detect it's a Python app
-
-## Step 3: Add PostgreSQL Database
-
-1. In your Railway project, click **"+ New"**
-2. Select **"Database" → "Add PostgreSQL"**
-3. Railway will automatically:
-   - Provision a PostgreSQL database
-   - Set the `DATABASE_URL` environment variable
-   - Link it to your application
-
-## Step 4: Configure Environment Variables
-
-In Railway dashboard, go to your app service → **Variables** tab and add:
-
-| Variable | Value | Description |
-|----------|-------|-------------|
-| `FLASK_ENV` | `production` | Sets the app to production mode |
-| `SECRET_KEY` | `<generate-random-key>` | **CRITICAL**: Use a secure random key (see below) |
-| `GEMINI_API_KEY` | `<your-key>` | Your Google Gemini API key |
-| `GROQ_API_KEY` | `<your-key>` | Your Groq API key (if using) |
-
-### Generate a Secure SECRET_KEY
-
-Run this locally and copy the output:
-```bash
-python -c "import secrets; print(secrets.token_hex(32))"
-```
-
-> [!IMPORTANT]
-> Railway automatically provides `DATABASE_URL` for PostgreSQL - **do not set it manually**.
-
-## Step 5: Deploy
-
-Railway will automatically deploy when you push to GitHub. Watch the deployment logs in the Railway dashboard.
-
-## Step 6: Initialize Database
-
-After the first deployment, you need to create database tables:
-
-1. In Railway dashboard, go to your app service
-2. Click **"Settings" → "Deploy Logs"** or open the **Shell** tab
-3. Run database migrations:
-   ```bash
-   flask db upgrade
-   ```
-
-   Or if Flask-Migrate isn't initialized:
-   ```bash
-   flask db init
-   flask db migrate -m "Initial migration"
-   flask db upgrade
-   ```
-
-## Step 7: Access Your App
-
-1. In Railway dashboard, go to **"Settings"**
-2. Click **"Generate Domain"** to get a public URL
-3. Your app will be live at `https://your-app-name.up.railway.app`
-
-## Troubleshooting
-
-### Build Failures
-
-**Error**: `ModuleNotFoundError`
-- **Fix**: Ensure all dependencies are in `requirements.txt`
-- Run locally: `pip freeze > requirements.txt`
-
-**Error**: `Python version not found`
-- **Fix**: Check `runtime.txt` matches your Python version
-- Current: `python-3.12.3`
-
-### Database Connection Issues
-
-**Error**: `could not connect to server`
-- **Fix**: Ensure PostgreSQL service is running in Railway
-- Check that services are linked in Railway dashboard
-
-**Error**: `relation does not exist`
-- **Fix**: Run database migrations (see Step 6)
-
-### SECRET_KEY Errors
-
-**Error**: `Please set a secure SECRET_KEY in production!`
-- **Fix**: Set `SECRET_KEY` environment variable in Railway (see Step 4)
-
-### App Won't Start
-
-1. Check deploy logs in Railway dashboard
-2. Ensure `Procfile` exists and is correct: `web: gunicorn run:app`
-3. Verify `FLASK_ENV=production` is set
-
-## Continuous Deployment
-
-Railway automatically redeploys when you push to GitHub:
+### Quick Push to GitHub:
 
 ```bash
+cd d:\Flash-Card
+
+# Initialize git (if not already)
+git init
+
+# Add all files
 git add .
-git commit -m "Update feature"
-git push origin main
+
+# Commit
+git commit -m "Complete BrainDeck app with 14 pages"
+
+# Add remote (replace with your repo URL)
+git remote add origin https://github.com/YOUR_USERNAME/braindeck.git
+
+# Push
+git push -u origin main
 ```
 
-Watch the deployment in Railway dashboard.
+---
 
-## Monitoring
+## 🔶 Vercel Deployment - SPLIT APPROACH
 
-- **Logs**: Railway dashboard → Your service → Deploy Logs
-- **Metrics**: Railway dashboard → Your service → Metrics tab
-- **Database**: Railway dashboard → PostgreSQL service
+### ⚠️ Important: Backend NOT on Vercel
+Flask is **not recommended** for Vercel (serverless limitations). Use this approach:
 
-## Database Management
+### 1. **Frontend → Vercel** ✅
+### 2. **Backend → Railway/Render** ✅
 
-### Backup Database
-Railway provides automatic backups for paid plans. For manual backup:
+---
+
+## 📦 Frontend Deployment (Vercel)
+
+### Step 1: Add Environment Variable
+
+Create `frontend/.env.local`:
+```env
+NEXT_PUBLIC_API_URL=https://your-backend-url.railway.app
+```
+
+### Step 2: Deploy to Vercel
 
 ```bash
-# In Railway shell
-pg_dump $DATABASE_URL > backup.sql
+cd frontend
+
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+
+# Follow prompts:
+# - Project name: braindeck
+# - Settings: accept defaults
 ```
 
-### View Database
-In Railway dashboard → PostgreSQL service → Data tab
+**OR** use Vercel Dashboard:
+1. Go to https://vercel.com
+2. Import `frontend` folder from GitHub
+3. Add environment variable: `NEXT_PUBLIC_API_URL`
+4. Deploy!
 
-## Cost Estimates
+---
 
-- **Free Tier**: $5 credit/month (good for small apps)
-- **Hobby Plan**: $5/month (500 hours execution)
-- **Pro Plan**: Pay-as-you-go
+## 🚂 Backend Deployment (Railway - Recommended)
 
-Your app will likely stay within free tier limits during development.
+### Option A: Railway (Easiest for Flask)
 
-## Next Steps
+1. **Sign up**: https://railway.app
+2. **New Project** → Deploy from GitHub
+3. **Select** your repo
+4. **Root Directory**: Leave as `/` (root)
+5. **Add Environment Variables**:
+   ```env
+   FLASK_ENV=production
+   SECRET_KEY=your-super-secret-key-change-this
+   GEMINI_API_KEY=your-gemini-api-key
+   DATABASE_URL=postgresql://... (Railway will provide)
+   ```
 
-After deployment:
-1. ✅ Test user registration and login
-2. ✅ Create a deck and add flashcards
-3. ✅ Test AI features (if API keys configured)
-4. ✅ Set up custom domain (optional, in Railway settings)
-5. ✅ Configure CORS if building separate frontend
+6. **Add Start Command** in Railway settings:
+   ```bash
+   gunicorn run:app
+   ```
 
-## Useful Commands (Railway CLI)
+7. **Add to `requirements.txt`**:
+   ```txt
+   gunicorn==21.2.0
+   psycopg2-binary==2.9.9
+   ```
 
-Install Railway CLI:
-```bash
-npm i -g @railway/cli
+### Option B: Render.com
+
+1. **Sign up**: https://render.com
+2. **New Web Service** → Connect GitHub
+3. **Build Command**: `pip install -r requirements.txt`
+4. **Start Command**: `gunicorn run:app`
+5. **Add Environment Variables** (same as above)
+
+---
+
+## 📋 Pre-Deployment Checklist
+
+### Backend:
+- [ ] Add `gunicorn` to `requirements.txt`
+- [ ] Add `psycopg2-binary` for PostgreSQL
+- [ ] Set environment variables on Railway/Render
+- [ ] Update CORS to allow your Vercel domain
+- [ ] Test API endpoints once deployed
+
+### Frontend:
+- [ ] Set `NEXT_PUBLIC_API_URL` to backend URL
+- [ ] Build locally: `npm run build` (verify no errors)
+- [ ] Deploy to Vercel
+- [ ] Test all pages after deployment
+
+---
+
+## 🔧 Files to Update for Production
+
+### 1. Backend CORS (`app/__init__.py`)
+
+```python
+# Update origins to include production domain
+CORS(app, resources={
+    r"/api/*": {
+        "origins": [
+            "http://localhost:3000",
+            "https://braindeck.vercel.app"  # Add your Vercel URL
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": False
+    }
+})
 ```
 
-Login and link:
-```bash
-railway login
-railway link
+### 2. Database Migration
+
+Railway/Render use PostgreSQL. Update `app/config.py`:
+
+```python
+# Production will use PostgreSQL from environment
+SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///flashcards.db')
+
+# Fix for Railway's postgres:// vs postgresql://
+if SQLALCHEMY_DATABASE_URI and SQLALCHEMY_DATABASE_URI.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URI = SQLALCHEMY_DATABASE_URI.replace("postgres://", "postgresql://", 1)
 ```
 
-View logs:
-```bash
-railway logs
-```
+---
 
-Run shell:
-```bash
-railway shell
-```
+## 🎯 Deployment Summary
 
-Deploy manually:
-```bash
-railway up
-```
+| Component | Platform | URL Example |
+|-----------|----------|-------------|
+| **Frontend** | Vercel | `braindeck.vercel.app` |
+| **Backend** | Railway | `braindeck-api.railway.app` |
+| **Database** | Railway (PostgreSQL) | Auto-provisioned |
+
+---
+
+## ✅ Current Status
+
+**GitHub**: ✅ Ready to push (all secrets in .gitignore)
+
+**Vercel**: ⚠️ Only deploy **frontend** folder
+- Backend should go to Railway/Render instead
+
+**Production**: Need to:
+1. Push to GitHub
+2. Deploy backend to Railway
+3. Deploy frontend to Vercel with backend URL
+
+---
+
+## 🚨 What NOT to Deploy to Vercel
+
+- ❌ Flask backend (`app/` folder)
+- ❌ SQLite database
+- ❌ Python requirements
+- ✅ Only deploy `frontend/` folder to Vercel

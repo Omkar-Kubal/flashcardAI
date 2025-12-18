@@ -10,13 +10,6 @@ from app import create_app
 env = os.environ.get('FLASK_ENV', 'development')
 app = create_app(env)
 
-# Initialize production settings if needed
-if env == 'production':
-    from app.config import config
-    config_class = config.get(env)
-    if hasattr(config_class, 'init_app'):
-        config_class.init_app(app)
-
 if __name__ == '__main__':
     print("""
     ╔═══════════════════════════════════════════════════════════╗

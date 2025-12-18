@@ -11,6 +11,10 @@ Flask-Login>=0.6.0
 bcrypt>=4.0.0
 requests>=2.31.0
 
-# Production dependencies
+# REST API Dependencies
+flask-jwt-extended>=4.6.0
+flask-cors>=4.0.0
+
+# Production Server
 gunicorn>=21.2.0
 psycopg2-binary>=2.9.9
